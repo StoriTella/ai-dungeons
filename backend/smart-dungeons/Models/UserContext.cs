@@ -9,6 +9,6 @@ namespace smart_dungeons.Models
         {
         }
 
-        public DbSet<User> TodoItems { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }
