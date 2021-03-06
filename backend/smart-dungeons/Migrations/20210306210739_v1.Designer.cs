@@ -10,7 +10,7 @@ using smart_dungeons.Infrastructure;
 namespace smart_dungeons.Migrations
 {
     [DbContext(typeof(SmartDungeonsDbContext))]
-    [Migration("20210306203420_v1")]
+    [Migration("20210306210739_v1")]
     partial class v1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,7 +27,8 @@ namespace smart_dungeons.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<byte[]>("Hashcode")
                         .HasColumnType("varbinary(max)");
@@ -39,9 +40,16 @@ namespace smart_dungeons.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Username")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

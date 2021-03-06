@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System;
 using smart_dungeons.Domain.Shared;
 
@@ -6,7 +7,11 @@ namespace smart_dungeons.Domain.Users
     public class User: Entity<UserId>, IAggregateRoot
     { 
         public Guid UserId { get; set; }
+
+        [Required]
         public string Username { get; set; }
+
+        [Required]
         public string Email { get; set; }
         public byte[] Hashcode { get; set; }
         public byte[] Salt { get; set; }

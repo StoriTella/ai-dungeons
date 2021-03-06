@@ -6,6 +6,7 @@ using smart_dungeons.Domain.Shared;
 using smart_dungeons.DTO;
 using smart_dungeons.Helpers;
 using System.Text;
+using System.Linq;
 
 namespace smart_dungeons.Domain.Users
 {
@@ -60,6 +61,7 @@ namespace smart_dungeons.Domain.Users
         public async Task<UserDTO> AddAsync(UserLoginDTO dto)
         {
             User User = createHashcode(dto);
+            User.UserId = Guid.NewGuid();
             await this._repo.AddAsync(User);
 
             await this._unitOfWork.CommitAsync();
@@ -87,7 +89,7 @@ namespace smart_dungeons.Domain.Users
 
                 tdes.Key = pdb.CryptDeriveKey("TripleDES", "SHA1", 192, tdes.IV);
 
-                retBool = tdes.Key == u.Hashcode;
+                retBool = tdes.Key.SequenceEqual(u.Hashcode);
 
             }
             catch (Exception e)
@@ -129,7 +131,7 @@ namespace smart_dungeons.Domain.Users
                 // of the TripleDESCryptoServiceProvider object.
                 tdes.Key = pdb.CryptDeriveKey("TripleDES", "SHA1", 192, tdes.IV);
 
-                retUser.Salt = salt;
+                retUser.Salt = pdb.Salt;
                 retUser.Hashcode = tdes.Key;
             }
             catch (Exception e)

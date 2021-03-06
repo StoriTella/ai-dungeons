@@ -16,6 +16,14 @@ namespace smart_dungeons.Infrastructure
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+            modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
             modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
         }
     }
