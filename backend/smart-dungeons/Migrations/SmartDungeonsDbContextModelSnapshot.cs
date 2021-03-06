@@ -27,11 +27,11 @@ namespace smart_dungeons.Migrations
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Hashcode")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("Hashcode")
+                        .HasColumnType("varbinary(max)");
 
-                    b.Property<string>("Salt")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<byte[]>("Salt")
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");

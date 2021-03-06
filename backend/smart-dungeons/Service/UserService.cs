@@ -1,8 +1,11 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System;
+using System.Security.Cryptography;
 using smart_dungeons.Domain.Shared;
-using smart_dungeons.Domain.Users;
 using smart_dungeons.DTO;
+using smart_dungeons.Helpers;
+using System.Text;
 
 namespace smart_dungeons.Domain.Users
 {
@@ -20,7 +23,7 @@ namespace smart_dungeons.Domain.Users
         public async Task<List<UserDTO>> GetAllAsync()
         {
             var list = await this._repo.GetAllAsync();
-            
+
             List<UserDTO> listDto = list.ConvertAll<UserDTO>(User => 
                 new UserDTO(User.Id.AsGuid(),
                             User.Username,
@@ -32,7 +35,20 @@ namespace smart_dungeons.Domain.Users
         public async Task<UserDTO> GetByIdAsync(UserId id)
         {
             var User = await this._repo.GetByIdAsync(id);
-            
+
+            if(User == null)
+                return null;
+
+            return new UserDTO(User.Id.AsGuid(),
+                       User.Username,
+                       User.Email);
+        }
+
+
+        public async Task<UserDTO> GetByUsernameAsync(string username)
+        {
+            var User = await this._repo.GetByUsernameAsync(username);
+
             if(User == null)
                 return null;
 
@@ -51,15 +67,86 @@ namespace smart_dungeons.Domain.Users
             return new UserDTO(User.Id.AsGuid(),
                                User.Username,
                                User.Email);
-        
+
+        }
+
+        public async Task<bool> Login(UserLoginDTO dto) {
+            bool retBool = false;
+
+            byte[] pwd = Encoding.Unicode.GetBytes(dto.Password);
+
+            User u = await _repo.GetByUsernameAsync(dto.Username);
+
+            byte[] salt = u.Salt;
+
+            TripleDESCryptoServiceProvider tdes = new TripleDESCryptoServiceProvider();
+
+            try
+            {
+                PasswordDeriveBytes pdb = new PasswordDeriveBytes(pwd, salt);
+
+                tdes.Key = pdb.CryptDeriveKey("TripleDES", "SHA1", 192, tdes.IV);
+
+                retBool = tdes.Key == u.Hashcode;
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                // Clear the buffers
+                PasswordManager.ClearBytes(pwd);
+                PasswordManager.ClearBytes(salt);
+
+                // Clear the key.
+                tdes.Clear();
+
+            }
+
+            return retBool;
         }
 
         public User createHashcode(UserLoginDTO dto) {
-            //temp
-            return new User(dto.Username,
-                            dto.Email,
-                            "random",
-                            "random2");
+            User retUser = new User(dto.Username,
+                                    dto.Email);
+
+            byte[] pwd = Encoding.Unicode.GetBytes(dto.Password);
+
+            byte[] salt = PasswordManager.CreateRandomSalt(7);
+
+            // Create a TripleDESCryptoServiceProvider object.
+            TripleDESCryptoServiceProvider tdes = new TripleDESCryptoServiceProvider();
+
+            try
+            {
+                // Create a PasswordDeriveBytes object and then create
+                // a TripleDES key from the password and salt.
+                PasswordDeriveBytes pdb = new PasswordDeriveBytes(pwd, salt);
+
+                // Create the key and set it to the Key property
+                // of the TripleDESCryptoServiceProvider object.
+                tdes.Key = pdb.CryptDeriveKey("TripleDES", "SHA1", 192, tdes.IV);
+
+                retUser.Salt = salt;
+                retUser.Hashcode = tdes.Key;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                // Clear the buffers
+                PasswordManager.ClearBytes(pwd);
+                PasswordManager.ClearBytes(salt);
+
+                // Clear the key.
+                tdes.Clear();
+            }
+
+            return retUser;
         }
     }
 }

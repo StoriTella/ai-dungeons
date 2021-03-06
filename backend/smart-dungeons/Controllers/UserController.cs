@@ -1,3 +1,4 @@
+using System.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,5 +60,25 @@ namespace smart_dungeons.Controllers
                 return BadRequest(new {Message = ex.Message});
             }
         }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<bool>> Login(UserLoginDTO dto)
+        {
+            try
+            {
+                bool login = await _service.Login(dto);
+
+                if (login) {
+                return Ok();
+                } else {
+                return BadRequest(new {Message = "Login invalido"});
+                }
+            }
+            catch(BusinessRuleValidationException ex)
+            {
+                return BadRequest(new {Message = ex.Message});
+            }
+        }
+
     }
 }

@@ -8,8 +8,8 @@ namespace smart_dungeons.Domain.Users
         public Guid UserId { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
-        public string Hashcode { get; set; }
-        public string Salt { get; set; }
+        public byte[] Hashcode { get; set; }
+        public byte[] Salt { get; set; }
 
         private User()
         {
@@ -25,8 +25,8 @@ namespace smart_dungeons.Domain.Users
 
         public User(string Username,
                     string Email,
-                    string Hashcode,
-                    string Salt)
+                    byte[] Hashcode,
+                    byte[] Salt)
         {
             this.Id = new UserId(Guid.NewGuid());
             this.Username = Username;

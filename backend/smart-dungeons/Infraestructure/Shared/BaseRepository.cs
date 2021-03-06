@@ -12,18 +12,18 @@ namespace smart_dungeons.Infrastructure.Shared
     where TEntityId : EntityId
     {
         private readonly DbSet<TEntity> _objs;
-        
+
         public BaseRepository(DbSet<TEntity> objs)
         {
             this._objs = objs ?? throw new ArgumentNullException(nameof(objs));
-        
+
         }
 
         public async Task<List<TEntity>> GetAllAsync()
         {
             return await this._objs.ToListAsync();
         }
-        
+
         public async Task<TEntity> GetByIdAsync(TEntityId id)
         {
             //return await this._context.Categories.FindAsync(id);
