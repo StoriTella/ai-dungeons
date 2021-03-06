@@ -1,18 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
-using Microsoft.EntityFrameworkCore;
-using smart_dungeons.Models;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using smart_dungeons.Infrastructure;
+using smart_dungeons.Infrastructure.Users;
+using smart_dungeons.Infrastructure.Shared;
+using smart_dungeons.Domain.Shared;
+using smart_dungeons.Domain.Users;
 
 namespace smart_dungeons
 {
@@ -28,24 +25,36 @@ namespace smart_dungeons
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-            services.AddDbContext<UserContext>(opt =>
-                                               opt.UseInMemoryDatabase("User"));
-            services.AddControllers();
-            services.AddSwaggerGen(c =>
+            services.AddCors(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "smart_dungeons", Version = "v1" });
+                options.AddPolicy("MyAllowSpecificOrigins", builder =>
+                {
+                    builder.AllowAnyOrigin();
+                    builder.AllowAnyHeader();
+                    builder.AllowAnyMethod();
+                });
             });
+            services.AddDbContext<SmartDungeonsDbContext>(opt =>
+                opt.UseSqlServer(Configuration.GetConnectionString("SmartDungeonsDB"))
+                .ReplaceService<IValueConverterSelector, StronglyEntityIdValueConverterSelector>());
+
+            ConfigureMyServices(services);
+
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseCors("MyAllowSpecificOrigins");
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "smart_dungeons v1"));
+            }
+            else
+            {
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();
@@ -58,6 +67,22 @@ namespace smart_dungeons
             {
                 endpoints.MapControllers();
             });
+        }
+
+        public void ConfigureMyServices(IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "_myAllowSpecificOrigins", builder =>
+                {
+                    builder.WithOrigins("https://localhost:5001/", "http://localhost:5000/");
+                    builder.AllowAnyHeader();
+                });
+            });
+            services.AddTransient<IUnitOfWork,UnitOfWork>();
+
+            services.AddTransient<IUserRepository,UserRepository>();
+            services.AddTransient<UserService>();
         }
     }
 }
