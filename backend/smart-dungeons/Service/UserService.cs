@@ -58,7 +58,7 @@ namespace smart_dungeons.Domain.Users
                        User.Email);
         }
 
-        public async Task<UserDTO> AddAsync(UserLoginDTO dto)
+        public async Task<UserDTO> AddAsync(UserRegisterDTO dto)
         {
             User User = createHashcode(dto);
             User.UserId = Guid.NewGuid();
@@ -78,6 +78,10 @@ namespace smart_dungeons.Domain.Users
             byte[] pwd = Encoding.Unicode.GetBytes(dto.Password);
 
             User u = await _repo.GetByUsernameAsync(dto.Username);
+
+            if (u == null) {
+                return retBool;
+            }
 
             byte[] salt = u.Salt;
 
@@ -110,7 +114,7 @@ namespace smart_dungeons.Domain.Users
             return retBool;
         }
 
-        public User createHashcode(UserLoginDTO dto) {
+        public User createHashcode(UserRegisterDTO dto) {
             User retUser = new User(dto.Username,
                                     dto.Email);
 

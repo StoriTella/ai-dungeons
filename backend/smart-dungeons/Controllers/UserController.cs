@@ -47,7 +47,7 @@ namespace smart_dungeons.Controllers
         // POST: api/User
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(UserLoginDTO dto)
+        public async Task<ActionResult<User>> PostUser(UserRegisterDTO dto)
         {
             try
             {
@@ -69,9 +69,9 @@ namespace smart_dungeons.Controllers
                 bool login = await _service.Login(dto);
 
                 if (login) {
-                return Ok();
+                    return Ok();
                 } else {
-                return BadRequest(new {Message = "Login invalido"});
+                    return BadRequest(new {Message = "Invalid login"});
                 }
             }
             catch(BusinessRuleValidationException ex)
